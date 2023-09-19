@@ -1,0 +1,143 @@
+---
+
+include:
+  - project: 'kits-maxiv/cfg-maxiv-gitlabci'
+    file: PreCommit.gitlab-ci.yml
+
+variables:
+  MXCUBE_CORE_GIT_REPO: https://gitlab.maxiv.lu.se/kits-maxiv/mxcube/mxcubecore.git
+  MXCUBE_CORE_GIT_BRANCH: maxiv-develop
+  XDG_CACHE_HOME: "${CI_PROJECT_DIR}/.cache"
+  XDG_DATA_HOME: "${CI_PROJECT_DIR}/.share"
+
+default:
+  tags:
+    - kubernetes
+
+stages:
+  - check
+
+.javascript-job:
+  stage: check
+  image: harbor.maxiv.lu.se/dockerhub/library/node:20
+  before_script:
+    - node --version
+    - npm --version
+    - npm --global install pnpm
+    - pnpm --version
+    - pnpm --prefix=./ui install --frozen-lockfile
+
+# Check JavaScript formatting with Prettier
+prettier:
+  extends: .javascript-job
+  script:
+    - pnpm --prefix=./ui run prettier
+  allow_failure: true
+
+# Check JavaScript linting with ESLint
+eslint:
+  extends: .javascript-job
+  script:
+    - pnpm --prefix=./ui run eslint
+
+# Check Python tests with pytest
+pytest:
+  stage: check
+  image: harbor.maxiv.lu.se/dockerhub/mambaorg/micromamba:1.5.8
+  parallel:
+    matrix:
+      - PYTHON_VER: ["3.11"]
+  coverage: '/^TOTAL.+?(\d+\%)$/'
+  before_script:
+    # Create conda environment
+    - eval "$(/bin/micromamba shell hook -s bash)"
+    - >
+      micromamba create --file conda-environment.yml --yes
+      git
+      python==$PYTHON_VER
+      python-ldap==3.4.3
+    - micromamba activate mxcubeweb
+    # Install MXCuBE-Web Python backend server:
+    # * Install mxcubeweb as editable
+    # * Install mxcubecore from its git repository
+    - >
+      python -m pip install
+      --editable .
+      "mxcubecore @ git+${MXCUBE_CORE_GIT_REPO}@${MXCUBE_CORE_GIT_BRANCH}"
+      pytest pytest-cov
+  script:
+    - pytest -v --cov-report term-missing --cov-report html --junitxml=report.xml
+  artifacts:
+    when: always
+    paths:
+      - htmlcov/
+      - report.xml
+    reports:
+      junit: report.xml
+
+# Check end-to-end tests with Cypress:
+cypress:
+  stage: check
+  services:
+    - name: harbor.maxiv.lu.se/dockerhub/library/redis:7.4.0
+      # mxcube expects redis to be available on localhost
+      # no way to configure a different host right now
+      # this hack seems to work
+      alias: localhost
+  # It might make sense to use micromamba instead of mambaforge
+  # but the micromamba image does not allow to install system packages with apt easily.
+  image: harbor.maxiv.lu.se/dockerhub/condaforge/mambaforge:24.3.0-0
+  tags:
+    # cypress fails to run on kubernetes runner with:
+    # [3703:0919/142841.994560:ERROR:zygote_host_impl_linux.cc(263)]
+    # Failed to adjust OOM score of renderer with pid 3891: Permission denied (13)
+    - docker
+  variables:
+    CYPRESS_CACHE_FOLDER: "${CI_PROJECT_DIR}/.cache/Cypress"
+    CYPRESS_BASE_URL: http://127.0.0.1:8081
+    CYPRESS_COMMERCIAL_RECOMMENDATIONS: "0"
+    CYPRESS_CRASH_REPORTS: "0"
+    DEBIAN_FRONTEND: noninteractive
+    DISABLE_ESLINT_PLUGIN: "true"
+  cache:
+    - key:
+        files:
+          - "ui/pnpm-lock.yaml"
+      paths:
+        - ".cache/Cypress"
+        - ".share/pnpm/store"
+  before_script:
+    # Install Cypress requirements
+    # https://docs.cypress.io/guides/getting-started/installing-cypress#Linux-Prerequisites
+    - apt-get update --assume-yes
+    - >
+      apt-get install --assume-yes --no-install-recommends
+      firefox libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev
+      libnss3 libxss1 libasound2 libxtst6 xauth xvfb
+    # Create conda environment, and activate it
+    - source /opt/conda/etc/profile.d/conda.sh
+    - mamba env create --file conda-environment.yml --yes
+    - conda activate mxcubeweb
+    - mamba install python-ldap==3.4.3
+    # Install MXCuBE-Web Python backend server
+    # Install mxcubeweb as editable
+    # Install mxcubecore from its git repository
+    - >
+      python -m pip install
+      --editable .
+      "mxcubecore @ git+${MXCUBE_CORE_GIT_REPO}@${MXCUBE_CORE_GIT_BRANCH}"
+    # Install Node.js dependencies for MXCuBE-Web frontend
+    - pnpm --prefix=./ui install --frozen-lockfile
+    # Install Cypress binaries
+    - pnpm --prefix=./ui exec cypress install
+    # Build MXCuBE-Web frontend
+    - pnpm --prefix=./ui run build
+    # Run MXCuBE-Web Python backend server
+    - >
+      mxcubeweb-server
+      --log-level debug
+      --repository ./demo/
+      --static-folder $(pwd)/ui/build/
+      &
+  script:
+    - pnpm --prefix=./ui run e2e
