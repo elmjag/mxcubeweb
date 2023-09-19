@@ -1,0 +1,100 @@
+---
+stages:
+  - check
+  - test
+
+variables:
+  PYTHON_VER: "3.10"
+
+default:
+  tags:
+    - kubernetes
+
+.check-job:
+  stage: check
+  image: harbor.maxiv.lu.se/dockerhub/library/node:20
+  before_script:
+    - node --version
+    - npm --version
+    - npm --global install pnpm
+    - pnpm --version
+    - pnpm --prefix=./ui install --frozen-lockfile
+
+check-js-formatting:
+  extends: .check-job
+  script:
+    - pnpm --prefix=./ui run prettier
+  allow_failure: true
+
+eslint:
+  extends: .check-job
+  script:
+    - pnpm --prefix=./ui run eslint
+
+pytest:
+  stage: test
+  services:
+    - name: harbor.maxiv.lu.se/dockerhub/library/redis:latest
+  image: harbor.maxiv.lu.se/dockerhub/mambaorg/micromamba:latest
+  parallel:
+    matrix:
+      - PYTHON_VER: ["3.10"]
+  coverage: '/^TOTAL.+?(\d+\%)$/'
+  before_script:
+    - eval "$(/bin/micromamba shell hook -s bash)"
+    # Install the python version we want before to use conda-environment.yml
+    - micromamba install -y -n base -c conda-forge python=$PYTHON_VER
+    - micromamba install -y -n base -f conda-environment.yml
+    - micromamba activate base
+    - python -m pip install -e . pytest pytest-cov
+  script:
+    - pytest -v --cov-report term-missing --cov-report html --junitxml=report.xml
+  artifacts:
+    when: always
+    paths:
+      - htmlcov/
+      - report.xml
+    reports:
+      junit: report.xml
+
+e2e-test:
+  stage: test
+  services:
+    # redis:latest doesn't work on ci-node-0 (but does on ci-node-1...)
+    # See https://github.com/redis/redis/issues/12364
+    - name: harbor.maxiv.lu.se/dockerhub/library/redis:7.0.10
+      # mxcube expects redis to be available on localhost
+      # no way to configure a different host right now
+      # this hack seems to work
+      alias: localhost
+  image: harbor.maxiv.lu.se/dockerhub/condaforge/mambaforge
+  tags:
+    # cypress fails to run on kubernetes runner with:
+    # [3703:0919/142841.994560:ERROR:zygote_host_impl_linux.cc(263)]
+    # Failed to adjust OOM score of renderer with pid 3891: Permission denied (13)
+    - docker
+  variables:
+    DEBIAN_FRONTEND: noninteractive
+    DISABLE_ESLINT_PLUGIN: "true"
+  before_script:
+    # Install cypress requirements (Xvfb and firefox)
+    - apt update -y
+    - >
+      apt install --no-install-recommends -y
+      firefox libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev
+      libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
+    # Create conda env
+    - mamba env create -n mxcube -f conda-environment.yml
+    - source /opt/conda/etc/profile.d/conda.sh
+    - conda activate mxcube
+    # Install mxcubeweb and npm dependencies
+    - python -m pip install -e .
+    - pnpm --prefix=./ui install --frozen-lockfile
+    - pnpm --prefix=./ui run build
+    # cypress removed from package.json in MAX IV branch
+    # as it requires internet access for installation
+    - pnpm --prefix=./ui install cypress@13.1.0 @testing-library/cypress
+    # run MXCuBe backend
+    - mxcubeweb-server -r ./test/HardwareObjectsMockup.xml/ --static-folder $(pwd)/ui/build/ -L debug &
+  script:
+    - pnpm --prefix=./ui run e2e
