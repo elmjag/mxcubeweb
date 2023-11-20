@@ -20,7 +20,7 @@ import { getLoginInfo } from '../actions/login';
 import PrivateOutlet from './PrivateOutlet';
 import { sendRefreshSession } from '../api/login';
 
-const REFRESH_INTERVAL = 9000;
+const REFRESH_INTERVAL = 300_000; // 5min
 
 const router = createBrowserRouter([
   {
