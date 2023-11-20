@@ -135,7 +135,7 @@ class ServerIO {
 
   // eslint-disable-next-line sonarjs/cognitive-complexity
   listen() {
-    this.refreshInterval = setInterval(sendRefreshSession, 9000);
+    this.refreshInterval = setInterval(sendRefreshSession, 300000); // 5min
     this.connect();
 
     if (this.initialized) {
