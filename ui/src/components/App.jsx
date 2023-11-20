@@ -21,7 +21,7 @@ import PrivateOutlet from './PrivateOutlet';
 import { sendRefreshSession } from '../api/login';
 import { useErrorBoundary } from 'react-error-boundary';
 
-const REFRESH_INTERVAL = 9000;
+const REFRESH_INTERVAL = 300_000; // 5min
 
 const router = createBrowserRouter([
   {
