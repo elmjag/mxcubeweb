@@ -9,7 +9,13 @@ import Draggable from 'react-draggable';
 export default class GridForm extends React.Component {
   constructor(props) {
     super(props);
-    this.use_advanced_settings = false;
+
+    const advanced_settings = props.uiProperties.components.find(
+      (element) => element.id === 'advanced_settings',
+    );
+    this.use_advanced_settings = advanced_settings
+      ? advanced_settings.show
+      : false;
   }
 
   getGridControls() {
@@ -33,8 +39,8 @@ export default class GridForm extends React.Component {
           </td>
           {this.use_advanced_settings
             ? [
-                <td>{grid.cellVSpace.toFixed(2)}</td>,
-                <td>{grid.cellHSpace.toFixed(2)}</td>,
+                <td>{Number(grid.cellVSpace).toFixed(2)}</td>,
+                <td>{Number(grid.cellHSpace).toFixed(2)}</td>,
               ]
             : null}
           <td>

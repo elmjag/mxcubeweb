@@ -55,6 +55,11 @@ class _UISampleViewVideoControlsModel(BaseModel):
     show: bool
 
 
+class _UISampleViewGridOptions(BaseModel):
+    id: str
+    show: bool
+
+
 class UIPropertiesModel(BaseModel):
     id: str
     components: List[UIComponentModel]
@@ -68,11 +73,16 @@ class UISampleViewVideoControlsModel(UIPropertiesModel):
     components: List[_UISampleViewVideoControlsModel]
 
 
+class UISampleViewGridOptions(UIPropertiesModel):
+    components: List[_UISampleViewGridOptions]
+
+
 class UIPropertiesListModel(BaseModel):
     sample_view: UIPropertiesModel
     beamline_setup: UIPropertiesModel
     camera_setup: Optional[UICameraConfigModel]
     sample_view_video_controls: Optional[UISampleViewVideoControlsModel]
+    sample_view_grid_options: UISampleViewGridOptions
 
 
 class UserManagerUserConfigModel(BaseModel):

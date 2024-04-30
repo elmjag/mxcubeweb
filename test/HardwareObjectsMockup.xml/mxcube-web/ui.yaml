@@ -94,6 +94,12 @@ sample_view_video_controls:
     - id: video_size
       show: true
 
+sample_view_grid_options:
+  id: sample_view_grid_options
+  components:
+    - id: advanced_settings
+      show: true
+
 beamline_setup:
   id: beamline_setup
   components:

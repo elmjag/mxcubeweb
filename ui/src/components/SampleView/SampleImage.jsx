@@ -972,6 +972,7 @@ export default class SampleImage extends React.Component {
               selectedGrids={this.props.selectedGrids.map((grid) => grid.id)}
               setGridResultType={this.setGridResultType}
               gridResultType={this.props.gridResultType}
+              uiProperties={this.props.uiproperties.sample_view_grid_options}
             />
             {this.createVideoPlayerContainer(this.props.videoFormat)}
             <SampleControls
