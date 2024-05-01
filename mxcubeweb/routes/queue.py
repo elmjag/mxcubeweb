@@ -379,6 +379,16 @@ def init_route(app, server, url_prefix):  # noqa: C901
         resp.status_code = 200
         return resp
 
+    @bp.route("/ssx_mode", methods=["POST"])
+    @server.require_control
+    @server.restrict
+    def set_ssx_mode():
+        ssx_mode = request.get_json()
+        app.queue.set_ssx_mode(ssx_mode)
+        resp = jsonify({"ssx_mode": ssx_mode})
+        resp.status_code = 200
+        return resp
+
     @bp.route("/setting", methods=["POST"])
     @server.require_control
     @server.restrict
