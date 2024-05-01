@@ -93,6 +93,9 @@ class MXCUBEApplication:
     # characterizations
     AUTO_ADD_DIFFPLAN = False
 
+    # SSX MODE flag
+    SSX_MODE = False
+
     # Number of sample snapshots taken before collect
     DEFAULT_NUM_SNAPSHOTS = 4
 
