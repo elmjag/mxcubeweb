@@ -16,6 +16,7 @@ import {
   setQueueSettings,
   setAutoAddDiffPlan,
   setAutoMountSample,
+  setSSXMode,
 } from '../actions/queue';
 
 class QueueSettings extends React.Component {
@@ -26,6 +27,7 @@ class QueueSettings extends React.Component {
     this.autoMountNextOnClick = this.autoMountNextOnClick.bind(this);
     this.setAutoAddDiffPlan = this.setAutoAddDiffPlan.bind(this);
     this.autoLoopCentringOnClick = this.autoLoopCentringOnClick.bind(this);
+    this.SSXModeOnClick = this.SSXModeOnClick.bind(this);
 
     this.inputValue = '';
     this.state = { validationState: 'success' };
@@ -62,6 +64,12 @@ class QueueSettings extends React.Component {
     } else {
       this.props.setCentringMethod(CLICK_CENTRING);
     }
+  }
+
+  SSXModeOnClick(e) {
+    e.preventDefault();
+    console.log('SSXModeOnClick', e.target.checked);
+    this.props.setSSXMode(e.target.checked);
   }
 
   render() {
@@ -120,6 +128,15 @@ class QueueSettings extends React.Component {
               id="remember-params"
             />
           </Dropdown.Item>
+          <Dropdown.Item>
+            <Form.Check
+              type="checkbox"
+              name="ssxMode"
+              onChange={this.SSXModeOnClick}
+              checked={this.props.queueState.ssxMode}
+              label="SSX Mode"
+            />
+          </Dropdown.Item>
           <Dropdown.Divider />
           <Dropdown.Item>
             <NumSnapshotsDropDown align="end" />
@@ -147,6 +164,7 @@ function mapDispatchToProps(dispatch) {
     setAutoMountSample: bindActionCreators(setAutoMountSample, dispatch),
     setCentringMethod: bindActionCreators(setCentringMethod, dispatch),
     setQueueSettings: bindActionCreators(setQueueSettings, dispatch),
+    setSSXMode: bindActionCreators(setSSXMode, dispatch),
   };
 }
 

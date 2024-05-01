@@ -8,6 +8,7 @@ const INITIAL_STATE = {
   queueStatus: QUEUE_STOPPED,
   autoMountNext: false,
   autoAddDiffplan: false,
+  ssxMode: false,
   rememberParametersBetweenSamples: true,
   centringMethod: CLICK_CENTRING,
   numSnapshots: 4,
@@ -88,6 +89,9 @@ function queueReducer(state = INITIAL_STATE, action = {}) {
     case 'SET_AUTO_ADD_DIFFPLAN': {
       return { ...state, autoAddDiffplan: action.autoadd };
     }
+    case 'SET_SSX_MODE': {
+      return { ...state, ssxMode: action.ssx_mode };
+    }
     case 'SET_CENTRING_METHOD': {
       return { ...state, centringMethod: action.centringMethod };
     }
@@ -113,6 +117,7 @@ function queueReducer(state = INITIAL_STATE, action = {}) {
         groupFolder: action.data.queue.groupFolder,
         autoMountNext: action.data.queue.autoMountNext,
         autoAddDiffplan: action.data.queue.autoAddDiffplan,
+        ssxMode: action.data.queue.ssxMode,
         numSnapshots: action.data.queue.numSnapshots,
         centringMethod: action.data.queue.centringMethod,
         rememberParametersBetweenSamples:
