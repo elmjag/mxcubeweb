@@ -268,6 +268,7 @@ class Queue(ComponentBase):
         for setting_name in [
             "REMEMBER_PARAMETERS_BETWEEN_SAMPLES",
             "AUTO_ADD_DIFFPLAN",
+            "SSX_MODE",
         ]:
             settings[str_to_camel(setting_name)] = getattr(self.app, setting_name)
 
@@ -1880,6 +1881,17 @@ class Queue(ComponentBase):
                     _, entry = self.get_entry(t["queueID"])
                     entry.auto_add_diff_plan = autoadd
 
+    def set_ssx_mode(self, ssx_mode, current_sample=None):
+        """
+        Sets SSX Mode flag
+
+        :param bool ssx_mode: True ssx_mode,
+        """
+        self.app.SSX_MODE = ssx_mode
+        HWR.beamline.collect.ssx_mode = ssx_mode
+        msg = "SSX Mode set to {}".format(ssx_mode)
+        logging.getLogger("MX3.HWR").info(msg)
+
     def execute_entry_with_id(self, sid, tindex=None):
         """
         Execute the entry at position (sampleID, task index) in queue
@@ -2094,6 +2106,8 @@ class Queue(ComponentBase):
             CENTRING_METHOD,
             centring_method_as_string,
         )
+
+        self.app.SSX_MODE = HWR.beamline.collect.get_property("ssx_mode", False)
 
     def queue_start(self, sid):
         """
