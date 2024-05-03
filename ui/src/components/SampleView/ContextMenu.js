@@ -60,6 +60,11 @@ export default class ContextMenu extends React.Component {
       ];
     }
 
+    const twoDPointsCreation = {
+      text: 'Create 2D point',
+      action: () => this.createPointOnCanvas(),
+      key: 9,
+    };
     generalTaskNames.forEach((tname) => {
       const task = this.props.taskForm.defaultParameters[tname];
 
@@ -272,6 +277,7 @@ export default class ContextMenu extends React.Component {
           key: 3,
         },
         ...twoDPoints,
+        twoDPointsCreation,
         { text: 'divider', key: 7 },
         ...genericTasks.none,
         genericTasks.grid.none > 0 ? { text: 'divider', key: 7 } : {},
@@ -380,6 +386,12 @@ export default class ContextMenu extends React.Component {
     const { cellCenter } = this.props.shape;
     this.createPoint(cellCenter[0], cellCenter[1]);
     this.props.sampleViewActions.showContextMenu(false);
+  }
+
+  createPointOnCanvas() {
+    const { x, y, imageRatio } = this.props;
+    this.props.sampleViewActions.showContextMenu(false);
+    this.createPoint(x / imageRatio, y / imageRatio);
   }
 
   showContextMenu(x, y) {
