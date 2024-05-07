@@ -5,6 +5,8 @@ stages:
 
 variables:
   PYTHON_VER: "3.10"
+  XDG_CACHE_HOME: "${CI_PROJECT_DIR}/.cache"
+  XDG_DATA_HOME: "${CI_PROJECT_DIR}/.share"
 
 default:
   tags:
@@ -46,7 +48,7 @@ pytest:
     - micromamba install -y -n base -c conda-forge python=$PYTHON_VER
     - micromamba install -y -n base -f conda-environment.yml
     - micromamba activate base
-    - python -m pip install -e . pytest pytest-cov
+    - python -m pip install --editable . pytest pytest-cov
   script:
     - pytest -v --cov-report term-missing --cov-report html --junitxml=report.xml
   artifacts:
@@ -74,27 +76,39 @@ e2e-test:
     # Failed to adjust OOM score of renderer with pid 3891: Permission denied (13)
     - docker
   variables:
+    CYPRESS_CACHE_FOLDER: "${CI_PROJECT_DIR}/.cache/Cypress"
+    CYPRESS_COMMERCIAL_RECOMMENDATIONS: "0"
+    CYPRESS_CRASH_REPORTS: "0"
     DEBIAN_FRONTEND: noninteractive
     DISABLE_ESLINT_PLUGIN: "true"
+  cache:
+    - key:
+        files:
+          - "ui/pnpm-lock.yaml"
+      paths:
+        - ".cache/Cypress"
+        - ".share/pnpm/store"
   before_script:
-    # Install cypress requirements (Xvfb and firefox)
-    - apt update -y
+    # Install Cypress requirements
+    # https://docs.cypress.io/guides/getting-started/installing-cypress#Linux-Prerequisites
+    - apt-get update --assume-yes
     - >
-      apt install --no-install-recommends -y
+      apt-get install --assume-yes --no-install-recommends
       firefox libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev
-      libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
-    # Create conda env
+      libnss3 libxss1 libasound2 libxtst6 xauth xvfb
+    # Create conda environment, and activate it
     - mamba env create -n mxcube -f conda-environment.yml
     - source /opt/conda/etc/profile.d/conda.sh
     - conda activate mxcube
-    # Install mxcubeweb and npm dependencies
-    - python -m pip install -e .
+    # Install MXCuBE-Web Python backend server (as editable) and its dependencies
+    - python -m pip install --editable .
+    # Install Node.js dependencies for MXCuBE-Web frontend
     - pnpm --prefix=./ui install --frozen-lockfile
+    # Install Cypress binaries
+    - pnpm --prefix=./ui exec cypress install
+    # Build MXCuBE-Web frontend
     - pnpm --prefix=./ui run build
-    # cypress removed from package.json in MAX IV branch
-    # as it requires internet access for installation
-    - pnpm --prefix=./ui install cypress@13.1.0 @testing-library/cypress
-    # run MXCuBe backend
+    # Run MXCuBE-Web Python backend server
     - mxcubeweb-server -r ./test/HardwareObjectsMockup.xml/ --static-folder $(pwd)/ui/build/ -L debug &
   script:
     - pnpm --prefix=./ui run e2e
