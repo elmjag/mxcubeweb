@@ -21,6 +21,15 @@ import {
   toFixed,
 } from './fields';
 
+
+function keepEnteredValues(schema, formData) {
+  for (const [name, val] of Object.entries(schema.properties)) {
+    if (name in formData) {
+        val.default = formData[name];
+    }
+  }
+}
+
 class GenericTaskForm extends React.Component {
   constructor(props) {
     super(props);
@@ -244,6 +253,9 @@ class GenericTaskForm extends React.Component {
     const schema = this.setConstraintsFromDefualts(
       this.props.schema.user_collection_parameters,
     );
+
+    keepEnteredValues(schema, this.jsformData);
+
     return (
       <DraggableModal show={this.props.show} onHide={this.props.hide}>
         <Modal.Header closeButton>
