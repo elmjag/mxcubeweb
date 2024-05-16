@@ -1969,7 +1969,7 @@ class Queue(ComponentBase):
         :param bool ssx_mode: True ssx_mode,
         """
         self.app.SSX_MODE = ssx_mode
-        HWR.beamline.collect.SSX_MODE = ssx_mode
+        HWR.beamline.collect.ssx_mode = ssx_mode
         msg = 'SSX Mode set to {}'.format(ssx_mode)
         logging.getLogger("MX3.HWR").info(msg)
 
