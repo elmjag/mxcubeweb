@@ -450,7 +450,7 @@ def queue_mount_sample(view, data_model, centring_done_cb, async_result):  # noq
         return
 
     if hasattr(sample_mount_device, "__TYPE__"):
-        if sample_mount_device.__TYPE__ in ["Marvin", "CATS"]:
+        if sample_mount_device.__TYPE__ in ["Marvin", "CATS", "ISARA"]:
             element = "%d:%02d" % loc
             sample = {"location": element, "sampleID": element}
             mxcube.sample_changer.mount_sample_clean_up(sample)
