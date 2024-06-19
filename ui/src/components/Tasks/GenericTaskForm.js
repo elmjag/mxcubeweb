@@ -21,11 +21,10 @@ import {
   toFixed,
 } from './fields';
 
-
 function keepEnteredValues(schema, formData) {
   for (const [name, val] of Object.entries(schema.properties)) {
     if (name in formData) {
-        val.default = formData[name];
+      val.default = formData[name];
     }
   }
 }
