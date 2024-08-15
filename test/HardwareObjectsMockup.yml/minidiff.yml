@@ -1,0 +1,30 @@
+%YAML 1.2
+---
+class: DiffractometerMockup.DiffractometerMockup
+configuration:
+  chip_definition_file: chip_definition.json
+  exports: '["abort", "status", "my_fancy_function", "my_other_funny_function"]'
+  grid_direction: '{"fast": (0, 1), "slow": (1, 0), "omega_ref": 0}'
+  headType: MiniKappa
+  omega_reference: '{"motor_name": "phiz", "position":-0.2224, "camera_axis":"x"}'
+  phaseList: '["Transfer","Centring","BeamLocation", "DataCollection"]'
+  sample_mount_mode: sample_changer
+  username: diffractometer
+  zoomcentre: '{"x":340,"y":250}'
+objects:
+  backlight: udiff_backlight.yml
+  backlightswitch: udiff_backlightswitch.yml
+  beamstop: beamstop.yml
+  beamstop_distance: beamstop_alignment_x.yml
+  capillary: capillary.yml
+  focus: udiff_phix.yml
+  frontlight: udiff_frontlight.yml
+  frontlightswitch: udiff_frontlightswitch.yml
+  kappa: udiff_kappa.yml
+  kappa_phi: udiff_kappaphi.yml
+  phi: udiff_omega.yml
+  phiy: udiff_phiy.yml
+  phiz: udiff_phiz.yml
+  sampx: udiff_sampx.yml
+  sampy: udiff_sampy.yml
+  zoom: udiff_zoom.yml
