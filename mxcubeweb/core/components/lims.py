@@ -315,3 +315,11 @@ class Lims(ComponentBase):
                 self.sample_list_sync_sample(sample_info)
 
         return self.sample_list_get()
+
+    def filter_out_non_lims(self):
+        sample_list = self.app.SAMPLE_LIST.get("sampleList")
+        sample_order = self.app.SAMPLE_LIST.get("sampleOrder")
+        for sample in list(sample_list):
+            if not sample_list.get(sample).get("limsID", None):
+                sample_list.pop(sample)
+                sample_order.remove(sample)
