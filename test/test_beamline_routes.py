@@ -142,7 +142,7 @@ def test_get_beam_info(client):
     resp = client.get("/mxcube/api/v0.1/beamline/beam/info")
     data = json.loads(resp.data)
 
-    assert isinstance(data["currentAperture"], int)
+    assert isinstance(data["currentAperture"], str)
     assert len(data["apertureList"]) >= 0
     assert isinstance(data["position"][0], int)
     assert isinstance(data["position"][1], int)

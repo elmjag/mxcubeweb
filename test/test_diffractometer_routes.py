@@ -84,7 +84,7 @@ def test_get_aperture(client):
     resp = client.get("/mxcube/api/v0.1/diffractometer/aperture")
     data = json.loads(resp.data)
 
-    assert isinstance(data["currentAperture"], int)
+    assert isinstance(data["currentAperture"], str)
     assert isinstance(data["apertureList"], list)
 
 
