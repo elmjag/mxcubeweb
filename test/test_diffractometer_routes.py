@@ -1,5 +1,8 @@
 import json
 import random
+import gevent
+from gevent.event import Event
+from mxcubecore import HardwareRepository as HWR
 
 # Python 2 and 3 compatibility
 try:
@@ -62,6 +65,7 @@ def test_set_phase(client):
         data=json.dumps({"phase": new_phase}),
         content_type="application/json",
     )
+    assert resp.status_code == 200
 
     # Retrieve current phase
     resp = client.get("/mxcube/api/v0.1/diffractometer/phase")
@@ -73,6 +77,7 @@ def test_set_phase(client):
         data=json.dumps({"phase": original_phase}),
         content_type="application/json",
     )
+    assert resp.status_code == 200
 
     assert new_phase == actual_phase
 
@@ -97,38 +102,61 @@ def test_set_aperture(client):
     original value also is the current
     """
 
+    def pick_new_aperture(apertures, current: str):
+        """
+        pick first available aperture that is different from current
+        """
+        for aperture in sorted(apertures):
+            if aperture != current:
+                return aperture
+
+        assert False, "could not pick a new aperture"
+
+    def change_aperture(aperture):
+        #
+        # make API call to set aperture
+        #
+        beam_definer_value_changed.clear()
+        resp = client.put(
+            "/mxcube/api/v0.1/diffractometer/aperture",
+            data=json.dumps({"diameter": aperture}),
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+
+        # wait until beam definer changes the value
+        beam_definer_value_changed.wait()
+
+        #
+        # get aperture via REST API
+        #
+        resp = client.get("/mxcube/api/v0.1/diffractometer/aperture")
+        assert resp.status_code == 200
+        return json.loads(resp.data)["currentAperture"]
+
+    # listen for 'valueChanged' signal
+    beam_definer_value_changed = Event()
+    HWR.beamline.beam.definer.connect(
+        "valueChanged", lambda *_, **__: beam_definer_value_changed.set()
+    )
+
     resp = client.get("/mxcube/api/v0.1/diffractometer/aperture")
+    assert resp.status_code == 200
     data = json.loads(resp.data)
 
     original_aperture = data["currentAperture"]
+    new_aperture = pick_new_aperture(data["apertureList"], original_aperture)
 
-    ap = data["apertureList"][random.randint(0, len(data["apertureList"]) - 1)]
+    actual_aperture = change_aperture(new_aperture)
+    actual_original_aperture = change_aperture(original_aperture)
 
-    resp = client.put(
-        "/mxcube/api/v0.1/diffractometer/aperture",
-        data=json.dumps({"diameter": ap}),
-        content_type="application/json",
-    )
-
-    resp = client.get("/mxcube/api/v0.1/diffractometer/aperture")
-    actual_aperture = json.loads(resp.data)["currentAperture"]
-
-    resp = client.put(
-        "/mxcube/api/v0.1/diffractometer/aperture",
-        data=json.dumps({"diameter": original_aperture}),
-        content_type="application/json",
-    )
-
-    resp = client.get("/mxcube/api/v0.1/diffractometer/aperture")
-    actual_original_aperture = json.loads(resp.data)["currentAperture"]
-
-    assert ap == actual_aperture
+    assert new_aperture == actual_aperture
     assert actual_original_aperture == original_aperture
 
 
 def test_get_md_plate_mode(client):
     """
-    Simply checks if the route runs and does not throws any exceptions
+    Simply checks if the route runs and does not throw any exceptions
     """
     resp = client.get("/mxcube/api/v0.1/diffractometer/platemode")
     assert resp.status_code == 200
