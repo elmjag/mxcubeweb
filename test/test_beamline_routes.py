@@ -21,11 +21,16 @@ def test_beamline_get_all_attribute(client):
 
     expected = [
         "beam",
+        "beam.aperture",
+        "beam.definer",
+        "beam.definer.beam_size_hor",
+        "beam.definer.beam_size_ver",
         "cryo",
         "data_publisher",
         "detector",
         "detector.detector_distance",
         "diffractometer",
+        "diffractometer.aperture",
         "diffractometer.backlight",
         "diffractometer.backlightswitch",
         "diffractometer.beamstop",
