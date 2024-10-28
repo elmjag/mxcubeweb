@@ -241,7 +241,7 @@ class MXCUBEApplication:
     SSX_MODE = False
 
     # Number of sample snapshots taken before collect
-    NUM_SNAPSHOTS = 4
+    DEFAULT_NUM_SNAPSHOTS = 4
 
     # Remember collection paramters between samples
     # or reset (defualt) between samples.
@@ -523,7 +523,9 @@ class MXCUBEApplication:
             "VIDEO_FORMAT": MXCUBEApplication.VIDEO_FORMAT,
             "AUTO_MOUNT_SAMPLE": MXCUBEApplication.AUTO_MOUNT_SAMPLE,
             "AUTO_ADD_DIFFPLAN": MXCUBEApplication.AUTO_ADD_DIFFPLAN,
-            "NUM_SNAPSHOTS": MXCUBEApplication.NUM_SNAPSHOTS,
+            "NUM_SNAPSHOTS": HWR.beamline.collect.get_property(
+                "num_snapshots", MXCUBEApplication.DEFAULT_NUM_SNAPSHOTS
+            ),
             "UI_STATE": MXCUBEApplication.UI_STATE,
         }
 
