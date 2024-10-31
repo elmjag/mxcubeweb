@@ -6,7 +6,7 @@ include:
 
 variables:
   MXCUBE_CORE_GIT_REPO: https://gitlab.maxiv.lu.se/kits-maxiv/mxcube/mxcubecore.git
-  MXCUBE_CORE_GIT_BRANCH: maxiv-develop
+  MXCUBE_CORE_GIT_BRANCH: maxiv-next
   XDG_CACHE_HOME: "${CI_PROJECT_DIR}/.cache"
   XDG_DATA_HOME: "${CI_PROJECT_DIR}/.share"
 
