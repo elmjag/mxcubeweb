@@ -223,6 +223,13 @@ export default class ContextMenu extends React.Component {
         genericTasks.line.length > 0 ? { text: 'divider', key: 3 } : {},
         { text: 'Delete Line', action: () => this.removeShape(), key: 4 },
       ],
+      LINE_COLLECTION: [
+        {
+          text: 'Add Line',
+          action: () => this.createLineOnCanvas(this.props.shape.id),
+          key: 1,
+        },
+      ],
       GridGroup: [{ text: 'Save Grid', action: () => this.saveGrid(), key: 1 }],
       GridGroupSaved: [
         ...(this.props.enableNativeMesh
@@ -394,6 +401,10 @@ export default class ContextMenu extends React.Component {
     );
   }
 
+  createLineOnCanvas(refs) {
+    this.props.sampleViewActions.addShape({ t: 'L', refs });
+  }
+
   savePoint() {
     if (this.props.clickCentring) {
       this.props.sampleViewActions.stopClickCentring();
@@ -467,7 +478,6 @@ export default class ContextMenu extends React.Component {
       // e.g. [P1, P2, L1]
       lines.map((x) => sid.splice(sid.indexOf(x), 1));
     }
-
     this.props.sampleViewActions.addShape({ t: 'L', refs: shape.id }, (s) => {
       this.showModal(modal, wf, s);
     });

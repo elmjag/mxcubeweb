@@ -421,6 +421,8 @@ export default class SampleImage extends React.Component {
           this.props.twoDPoints[twoDPointList[0]].state === 'SAVED'
         ) {
           ctxMenuObj = { type: 'SAVED', id: twoDPointList[0] };
+        } else if (twoDPointList.length === 2) {
+          ctxMenuObj = { type: 'LINE_COLLECTION', id: twoDPointList };
         } else if (
           threeDpointList.length === 1 &&
           this.props.points[threeDpointList[0]].state === 'TMP'
