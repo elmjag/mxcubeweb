@@ -116,7 +116,7 @@ function LoginForm() {
           {loading && (
             <img className={styles.loader} src={loader} width="25" alt="" />
           )}
-          Sign in with {useSSO ? 'SSO' : 'proposal'}
+          Sign in
         </Button>
 
         {!loading && showErrorPanel && (
