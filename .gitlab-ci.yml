@@ -19,11 +19,14 @@ stages:
 
 .javascript-job:
   stage: check
-  image: harbor.maxiv.lu.se/dockerhub/library/node:20
+  image: harbor.maxiv.lu.se/dockerhub/mambaorg/micromamba:1.5.8
   before_script:
+    # Create conda environment
+    - eval "$(/bin/micromamba shell hook -s bash)"
+    - micromamba create --file conda-environment.yml --yes
+    - micromamba activate mxcubeweb
+    # Install Node.js dependencies
     - node --version
-    - npm --version
-    - npm --global install pnpm
     - pnpm --version
     - pnpm --prefix=./ui install --frozen-lockfile
 
@@ -32,7 +35,6 @@ prettier:
   extends: .javascript-job
   script:
     - pnpm --prefix=./ui run prettier
-  allow_failure: true
 
 # Check JavaScript linting with ESLint
 eslint:
