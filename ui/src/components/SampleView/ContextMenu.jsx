@@ -74,9 +74,9 @@ export default class ContextMenu extends React.Component {
         genericTasks.none.push({
           text: task.name,
           action: () =>
-            this.showModal('Generic', {
-              type: tname,
-            }),
+            task.acq_parameters?.create_point
+              ? this.createPointAndShowModal('Generic', { type: tname })
+              : this.showModal('Generic', { type: tname }),
           key: `${task.name}`,
         });
       }
@@ -452,7 +452,7 @@ export default class ContextMenu extends React.Component {
       sampleViewX,
       sampleViewY,
       'SAVED',
-      (shape) => this.showModal(name, {}, shape, extraParams),
+      (shape) => this.showModal(name, extraParams, shape),
     );
   }
 
