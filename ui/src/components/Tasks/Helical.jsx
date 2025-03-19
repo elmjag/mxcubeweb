@@ -153,7 +153,8 @@ class Helical extends React.Component {
                 disabled={this.props.beamline.hardwareObjects.energy.readonly}
                 propName="energy"
                 type="number"
-                label="Energy" />
+                label="Energy"
+              />
               <InputField
                 propName="resolution"
                 type="number"
