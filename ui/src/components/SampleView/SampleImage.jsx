@@ -209,7 +209,7 @@ export default class SampleImage extends React.Component {
   setVCellSpacing(e) {
     let value = Number.parseFloat(e.target.value);
     if (Number.isNaN(value)) {
-      value = '';
+      value = 0;
     }
 
     const gridData = this.selectedGrid();
@@ -235,7 +235,7 @@ export default class SampleImage extends React.Component {
   setHCellSpacing(e) {
     let value = Number.parseFloat(e.target.value);
     if (Number.isNaN(value)) {
-      value = '';
+      value = 0;
     }
 
     const gridData = this.selectedGrid();
